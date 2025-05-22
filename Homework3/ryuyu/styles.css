@@ -1,0 +1,305 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #2c3e50;
+}
+
+#pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.pokemon-card {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.pokemon-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.pokemon-card h3 {
+  margin: 10px 0;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.pokemon-card img {
+  width: 120px;
+  height: 120px;
+  display: block;
+  margin: 0 auto;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 70%;
+  max-width: 600px;
+  position: relative;
+  margin: 0;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.close {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#pokemon-details {
+  padding: 20px;
+}
+
+.stat-bar {
+  background: #f0f0f0;
+  border-radius: 5px;
+  margin: 5px 0;
+}
+
+.stat-fill {
+  background: #3498db;
+  height: 20px;
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.stats-button,
+.evolution-button,
+.compare-button {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.stats-button:hover,
+.evolution-button:hover,
+.compare-button:hover {
+  background-color: #2980b9;
+}
+
+.stats-div,
+.evolution-div,
+.compare-div {
+  position: fixed;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  z-index: 1000;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: auto;
+  cursor: move;
+}
+
+.stats-div.active,
+.evolution-div.active,
+.compare-div.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.stats-header {
+  padding-right: 30px;
+  margin-bottom: 15px;
+  user-select: none;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.stats-div *,
+.evolution-div *,
+.compare-div * {
+  user-select: none;
+}
+
+.stats-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 24px;
+  height: 24px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  transition: background-color 0.3s ease;
+  z-index: 1001;
+  pointer-events: auto;
+}
+
+.stats-close:hover {
+  background: #c0392b;
+}
+
+/* Add specific styles for the content areas */
+.stats-div svg,
+.evolution-div svg,
+.compare-div svg {
+  cursor: default;
+}
+
+.node {
+  cursor: default;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: #3498db;
+  stroke-width: 2px;
+}
+
+.node text {
+  font-size: 12px;
+  font-family: sans-serif;
+  cursor: default;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+.pokemon-sprite {
+  width: 60px;
+  height: 60px;
+  cursor: default;
+}
+
+.value-label {
+  font-size: 12px;
+  fill: #2c3e50;
+}
+
+rect {
+  fill: #3498db;
+}
+
+rect:hover {
+  fill: #2980b9;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Override cursor for interactive elements */
+.stats-button,
+.evolution-button,
+.compare-button {
+  cursor: pointer;
+}
+
+/* Keep default cursor for text elements */
+text {
+  cursor: default;
+}
+
+/* Ensure SVG elements don't interfere with dragging */
+svg {
+  pointer-events: none;
+}
+
+/* But allow interactions with specific SVG elements */
+.node circle,
+.node text,
+rect,
+.link {
+  pointer-events: auto;
+}
+
+.scatter-point {
+  fill: #3498db;
+  opacity: 0.6;
+  transition: fill 0.3s ease, opacity 0.3s ease, r 0.3s ease;
+}
+
+.scatter-point:hover {
+  fill: #e74c3c;
+  opacity: 1;
+}
+
+.scatter-point.highlighted {
+  fill: #e74c3c;
+  opacity: 1;
+}
+
+.axis-label {
+  font-size: 12px;
+  fill: #2c3e50;
+}
+
+.tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
