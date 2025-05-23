@@ -1,7 +1,41 @@
-// Load the Pokemon data
+// drag functions for plots
+function dragstarted(event) {
+  const div = d3.select(this);
+  const rect = this.getBoundingClientRect();
+
+  // Calculate the offset from the current position
+  const offsetX = event.x - rect.left;
+  const offsetY = event.y - rect.top;
+
+  // Store current transform values
+  const transform = div.style('transform');
+  div
+    .attr('data-initial-transform', transform)
+    .style('transform', 'none')
+    .style('left', rect.left + 'px')
+    .style('top', rect.top + 'px')
+    .attr('data-offset-x', offsetX)
+    .attr('data-offset-y', offsetY);
+}
+
+function dragged(event) {
+  const div = d3.select(this);
+
+  // Check if drag was initialized
+  if (!div.attr('data-offset-x')) return;
+
+  const offsetX = +div.attr('data-offset-x');
+  const offsetY = +div.attr('data-offset-y');
+
+  div
+    .style('left', event.x - offsetX + 'px')
+    .style('top', event.y - offsetY + 'px');
+}
+
+// load the Pokemon data
 d3.csv('./data/pokemon.csv')
   .then((data) => {
-    // Process the data
+    // convert csv data to json
     const processedData = data.map((d) => ({
       id: +d.Number,
       name: d.Name,
@@ -18,7 +52,7 @@ d3.csv('./data/pokemon.csv')
       legendary: d.isLegendary === 'True',
     }));
 
-    // Create Pokemon cards
+    // create Pokemon card divs
     const cards = d3
       .select('#pokemon-grid')
       .selectAll('.pokemon-card')
@@ -27,9 +61,10 @@ d3.csv('./data/pokemon.csv')
       .attr('class', 'pokemon-card')
       .on('click', showPokemonDetails);
 
-    // Add content to cards
+    // add pokemon name to cards
     cards.append('h3').text((d) => d.name);
 
+    // add pokemon sprites to card from PokeAPI
     cards
       .append('img')
       .attr(
@@ -43,28 +78,31 @@ d3.csv('./data/pokemon.csv')
       .append('p')
       .text((d) => `Type: ${d.type1}${d.type2 ? '/' + d.type2 : ''}`);
 
-    // Modal functionality
+    // create card modal + close button
     const modal = document.getElementById('modal');
     const closeBtn = document.getElementsByClassName('close')[0];
 
+    // hide modal when close button is clicked
     closeBtn.onclick = function () {
       modal.style.display = 'none';
-      // Remove all floating divs when closing the modal
+      // remove all visual plots when closing the modal
       d3.selectAll('.stats-div').remove();
       d3.selectAll('.evolution-div').remove();
       d3.selectAll('.compare-div').remove();
     };
 
+    // hide modal when clicking outside of modal
     window.onclick = function (event) {
       if (event.target === modal) {
         modal.style.display = 'none';
-        // Remove all floating divs when closing the modal
+        // remove all visual plots when closing the modal
         d3.selectAll('.stats-div').remove();
         d3.selectAll('.evolution-div').remove();
         d3.selectAll('.compare-div').remove();
       }
     };
 
+    // show pokemon details when card is clicked
     function showPokemonDetails(event, d) {
       const modal = document.getElementById('modal');
       const detailsDiv = document.getElementById('pokemon-details');
@@ -75,8 +113,10 @@ d3.csv('./data/pokemon.csv')
       // Create details content
       const content = d3.select('#pokemon-details');
 
+      // add pokemon name to details div
       content.append('h2').text(d.name);
 
+      // add pokemon sprite to details div
       content
         .append('img')
         .attr(
@@ -89,6 +129,7 @@ d3.csv('./data/pokemon.csv')
         .style('display', 'block')
         .style('margin', '0 auto');
 
+      // add typing, generation, & legendary status to details
       content.append('p').html(`<strong>Types:</strong> ${d.type1}${
         d.type2 ? '/' + d.type2 : ''
       }<br>
@@ -102,46 +143,48 @@ d3.csv('./data/pokemon.csv')
         .style('justify-content', 'center')
         .style('gap', '10px');
 
-      // Create stats button
+      // Create stats button + show stats when clicked (Bar Chart)
       buttonsContainer
         .append('button')
         .attr('class', 'stats-button')
         .text('Show Stats')
         .on('click', function () {
-          // Check if stats div already exists
+          // Check if stats div already exists so it doesn't reopen
           if (d3.select('.stats-div').empty()) {
             showStats();
           }
         });
 
-      // Create evolution button
+      // Create evolution + show evolution tree when clicked (Dendrogram)
       buttonsContainer
         .append('button')
         .attr('class', 'evolution-button')
         .text('Show Evolution')
         .on('click', () => {
-          // Check if evolution div already exists
+          // Check if evolution div already exists so it doesn't reopen
           if (d3.select('.evolution-div').empty()) {
             showEvolution(d);
           }
         });
 
-      // Create compare button
+      // Create compare button + show Base Stat Total (BST) comparison when clicked (Scatter Plot)
       buttonsContainer
         .append('button')
         .attr('class', 'compare-button')
         .text('Compare Pokémon')
         .on('click', () => {
-          // Check if compare div already exists
+          // Check if compare div already exists so it doesn't reopen
           if (d3.select('.compare-div').empty()) {
             showComparison(d, processedData);
           }
         });
 
+      // show stats when stats button is clicked
       function showStats() {
         // Remove any existing stats div
         d3.selectAll('.stats-div').remove();
 
+        // filter out stats from csv data
         const stats = [
           { name: 'HP', value: d.hp },
           { name: 'Attack', value: d.attack },
@@ -207,7 +250,7 @@ d3.csv('./data/pokemon.csv')
         // Add Y axis
         svg.append('g').call(d3.axisLeft(y));
 
-        // Add bars with transition
+        // Add bars with transition - darkens bars when hovered over
         svg
           .selectAll('rect')
           .data(stats)
@@ -247,41 +290,10 @@ d3.csv('./data/pokemon.csv')
             .classed('active', true)
             .style('transform', 'translate(-50%, -50%) scale(1)');
         }, 50);
-
-        function dragstarted(event) {
-          const div = d3.select(this);
-          const rect = this.getBoundingClientRect();
-
-          // Calculate the offset from the current position
-          const offsetX = event.x - rect.left;
-          const offsetY = event.y - rect.top;
-
-          // Store current transform values
-          const transform = div.style('transform');
-          div
-            .attr('data-initial-transform', transform)
-            .style('transform', 'none')
-            .style('left', rect.left + 'px')
-            .style('top', rect.top + 'px')
-            .attr('data-offset-x', offsetX)
-            .attr('data-offset-y', offsetY);
-        }
-
-        function dragged(event) {
-          const div = d3.select(this);
-
-          // Check if drag was initialized
-          if (!div.attr('data-offset-x')) return;
-
-          const offsetX = +div.attr('data-offset-x');
-          const offsetY = +div.attr('data-offset-y');
-
-          div
-            .style('left', event.x - offsetX + 'px')
-            .style('top', event.y - offsetY + 'px');
-        }
       }
 
+      // show evolution tree when evolution button is clicked
+      // fetches evolution chain data from PokeAPI
       async function showEvolution(pokemon) {
         // Remove any existing evolution div
         d3.selectAll('.evolution-div').remove();
@@ -401,44 +413,12 @@ d3.csv('./data/pokemon.csv')
               .classed('active', true)
               .style('transform', 'translate(-50%, -50%) scale(1)');
           }, 50);
-
-          function dragstarted(event) {
-            const div = d3.select(this);
-            const rect = this.getBoundingClientRect();
-
-            // Calculate the offset from the current position
-            const offsetX = event.x - rect.left;
-            const offsetY = event.y - rect.top;
-
-            // Store current transform values
-            const transform = div.style('transform');
-            div
-              .attr('data-initial-transform', transform)
-              .style('transform', 'none')
-              .style('left', rect.left + 'px')
-              .style('top', rect.top + 'px')
-              .attr('data-offset-x', offsetX)
-              .attr('data-offset-y', offsetY);
-          }
-
-          function dragged(event) {
-            const div = d3.select(this);
-
-            // Check if drag was initialized
-            if (!div.attr('data-offset-x')) return;
-
-            const offsetX = +div.attr('data-offset-x');
-            const offsetY = +div.attr('data-offset-y');
-
-            div
-              .style('left', event.x - offsetX + 'px')
-              .style('top', event.y - offsetY + 'px');
-          }
         } catch (error) {
           console.error('Error fetching evolution data:', error);
         }
       }
 
+      // recursively build the evolution tree
       function processEvolutionChain(chain) {
         const result = {
           name: formatName(chain.species.name),
@@ -455,6 +435,7 @@ d3.csv('./data/pokemon.csv')
         return result;
       }
 
+      // format the pokemon name
       function formatName(name) {
         return name
           .split('-')
@@ -462,11 +443,13 @@ d3.csv('./data/pokemon.csv')
           .join(' ');
       }
 
+      // extract the pokemon id from the url
       function getIdFromUrl(url) {
         const matches = url.match(/\/(\d+)\//);
         return matches ? parseInt(matches[1]) : null;
       }
 
+      // show comparison when compare button is clicked
       function showComparison(selectedPokemon, allPokemon) {
         // Remove any existing comparison div
         d3.selectAll('.compare-div').remove();
@@ -676,6 +659,7 @@ d3.csv('./data/pokemon.csv')
               .call(zoom.transform, d3.zoomIdentity);
           });
 
+        // update the transform for the plot area
         function zoomed(event) {
           // Update the transform for the plot area
           const transform = event.transform;
@@ -699,39 +683,6 @@ d3.csv('./data/pokemon.csv')
         setTimeout(() => {
           compareDiv.classed('active', true);
         }, 50);
-
-        function dragstarted(event) {
-          const div = d3.select(this);
-          const rect = this.getBoundingClientRect();
-
-          // Calculate the offset from the current position
-          const offsetX = event.x - rect.left;
-          const offsetY = event.y - rect.top;
-
-          // Store current transform values
-          const transform = div.style('transform');
-          div
-            .attr('data-initial-transform', transform)
-            .style('transform', 'none')
-            .style('left', rect.left + 'px')
-            .style('top', rect.top + 'px')
-            .attr('data-offset-x', offsetX)
-            .attr('data-offset-y', offsetY);
-        }
-
-        function dragged(event) {
-          const div = d3.select(this);
-
-          // Check if drag was initialized
-          if (!div.attr('data-offset-x')) return;
-
-          const offsetX = +div.attr('data-offset-x');
-          const offsetY = +div.attr('data-offset-y');
-
-          div
-            .style('left', event.x - offsetX + 'px')
-            .style('top', event.y - offsetY + 'px');
-        }
       }
 
       // Show modal with flex display
